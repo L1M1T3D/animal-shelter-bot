@@ -1,0 +1,128 @@
+# Animal Shelter Bot — REST API
+# IntelliJ IDEA HTTP Client / VS Code REST Client
+#
+# 1. Запустите AnimalShelterApplication на порту 8080.
+# 2. Для создания усыновления сначала отправьте /start своему Telegram-боту.
+# 3. После POST обновите соответствующие ID ниже: ответы на POST содержат числовой ID.
+# 4. Для отчета используйте настоящий Telegram file_id изображения.
+
+@baseUrl = http://localhost:8080
+@animalId = 1
+@telegramId = 123456789
+@adoptionId = 1
+@reportId = 1
+@deleteAnimalId = 0
+
+
+### ────────────────────────────────────────────────────────────────────────────
+### ЖИВОТНЫЕ /api/animals
+### ────────────────────────────────────────────────────────────────────────────
+
+### Список всех животных
+GET {{baseUrl}}/api/animals
+Accept: application/json
+
+### Список кошек
+GET {{baseUrl}}/api/animals?species=CAT
+Accept: application/json
+
+### Список собак
+GET {{baseUrl}}/api/animals?species=DOG
+Accept: application/json
+
+### Создать животное — ответ 201 и числовой ID
+POST {{baseUrl}}/api/animals
+Content-Type: application/json
+
+{
+  "name": "Луна",
+  "species": "CAT",
+  "available": true
+}
+
+### Получить животное по ID
+GET {{baseUrl}}/api/animals/{{animalId}}
+Accept: application/json
+
+### Изменить животное (используйте ID неусыновленного питомца)
+PUT {{baseUrl}}/api/animals/{{animalId}}
+Content-Type: application/json
+
+{
+  "name": "Луна-М",
+  "species": "CAT",
+  "available": true
+}
+
+
+### ────────────────────────────────────────────────────────────────────────────
+### УСЫНОВЛЕНИЯ /api/adoptions
+### ────────────────────────────────────────────────────────────────────────────
+
+### Оформить усыновление — ответ 201 и числовой ID
+# animalId: ID доступного животного
+# telegramId: ID пользователя, уже зарегистрированного через /start
+POST {{baseUrl}}/api/adoptions
+Content-Type: application/json
+
+{
+  "animalId": {{animalId}},
+  "telegramId": {{telegramId}}
+}
+
+### Получить усыновление по ID
+GET {{baseUrl}}/api/adoptions/{{adoptionId}}
+Accept: application/json
+
+### Все усыновления Telegram-пользователя
+GET {{baseUrl}}/api/adoptions?telegramId={{telegramId}}
+Accept: application/json
+
+
+### ────────────────────────────────────────────────────────────────────────────
+### ЕЖЕДНЕВНЫЕ ОТЧЕТЫ /api/reports
+### ────────────────────────────────────────────────────────────────────────────
+
+### Создать полный отчет — ответ 201 и числовой ID
+# photoFileId — Telegram file_id фотографии, не путь к файлу на компьютере
+# В рамках одного усыновления допускается один отчет в сутки
+POST {{baseUrl}}/api/reports
+Content-Type: application/json
+
+{
+  "adoptionId": {{adoptionId}},
+  "description": "Питомец хорошо себя чувствует, ест и привыкает к новому дому.",
+  "photoFileId": "REPLACE_WITH_REAL_TELEGRAM_FILE_ID"
+}
+
+### Получить все отчеты по усыновлению
+GET {{baseUrl}}/api/reports?adoptionId={{adoptionId}}
+Accept: application/json
+
+### Получить отчет по ID
+GET {{baseUrl}}/api/reports/{{reportId}}
+Accept: application/json
+
+
+### ────────────────────────────────────────────────────────────────────────────
+### НЕГАТИВНЫЕ СЦЕНАРИИ И УДАЛЕНИЕ (запускайте отдельно)
+### ────────────────────────────────────────────────────────────────────────────
+
+### Проверка 400 — некорректное имя животного
+POST {{baseUrl}}/api/animals
+Content-Type: application/json
+
+{
+  "name": "",
+  "species": "CAT",
+  "available": true
+}
+
+### Проверка 404 — отсутствующее животное (ID 0)
+GET {{baseUrl}}/api/animals/0
+Accept: application/json
+
+### Удалить животное (ответ 204)
+# Перед удалением укажите ID тестового животного в переменной deleteAnimalId в начале файла.
+# Не удаляйте животное, для которого оформлено усыновление.
+DELETE {{baseUrl}}/api/animals/{{deleteAnimalId}}
