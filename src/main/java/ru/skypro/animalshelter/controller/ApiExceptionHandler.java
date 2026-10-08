@@ -1,51 +1,25 @@
-
 package ru.skypro.animalshelter.controller;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.*;
 import ru.skypro.animalshelter.dto.ErrorResponse;
-import ru.skypro.animalshelter.exception.AnimalNotFoundException;
-
+import ru.skypro.animalshelter.exception.*;
 import java.time.Instant;
 
-/**
- * Централизованный обработчик исключений REST API.
- */
+/** Единое преобразование ошибок приложения в корректные HTTP-статусы. */
 @RestControllerAdvice
 public class ApiExceptionHandler {
-
-    /**
-     * Возвращает 404, если животное не найдено.
-     */
-    @ExceptionHandler(AnimalNotFoundException.class)
+    /** Неизвестная сущность — HTTP 404. */
+    @ExceptionHandler({AnimalNotFoundException.class, DomainNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFound(AnimalNotFoundException exception) {
-        return new ErrorResponse(
-                exception.getMessage(),
-                Instant.now()
-        );
+    public ErrorResponse handleNotFound(RuntimeException e) {
+        return new ErrorResponse(e.getMessage(), Instant.now());
     }
 
-    /**
-     * Возвращает 400 при ошибках валидации входных данных.
-     */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidation(MethodArgumentNotValidException exception) {
-        return new ErrorResponse(
-                "Некорректные данные животного",
-                Instant.now()
-        );
-    }
-
-    /**
-     * Возвращает 400 при невалидном JSON.
-     */
+    /** Некорректные данные — HTTP 400. */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleInvalidJson(HttpMessageNotReadableException exception) {
@@ -55,15 +29,10 @@ public class ApiExceptionHandler {
         );
     }
 
-    /**
-     * Возвращает 409 при нарушении ограничений базы данных.
-     */
-    @ExceptionHandler(DataIntegrityViolationException.class)
+    /** Конфликт бизнес-правил или БД — HTTP 409. */
+    @ExceptionHandler({DomainConflictException.class, DataIntegrityViolationException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleConflict(DataIntegrityViolationException exception) {
-        return new ErrorResponse(
-                "Нельзя выполнить операцию из-за связей с другими данными",
-                Instant.now()
-        );
+    public ErrorResponse handleConflict(RuntimeException e) {
+        return new ErrorResponse("Операция не выполнена: " + e.getMessage(), Instant.now());
     }
 }

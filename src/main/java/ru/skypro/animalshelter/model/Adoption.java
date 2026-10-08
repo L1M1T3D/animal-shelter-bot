@@ -1,16 +1,13 @@
 package ru.skypro.animalshelter.model;
 
 import jakarta.persistence.*;
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Сущность усыновления животного и его испытательного периода.
- */
+/** Договор о передаче питомца владельцу на испытательный срок. */
 @Entity
 @Table(name = "adoptions")
 public class Adoption {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,16 +30,13 @@ public class Adoption {
     @Column(name = "ends_at", nullable = false)
     private LocalDateTime endsAt;
 
-    protected Adoption() {
-    }
+    @Column(name = "last_escalation_on")
+    private LocalDate lastEscalationOn;
 
-    public Adoption(
-            Adopter adopter,
-            Animal animal,
-            AdoptionStatus status,
-            LocalDateTime startedAt,
-            LocalDateTime endsAt
-    ) {
+    protected Adoption() { }
+
+    public Adoption(Adopter adopter, Animal animal, AdoptionStatus status,
+                    LocalDateTime startedAt, LocalDateTime endsAt) {
         this.adopter = adopter;
         this.animal = animal;
         this.status = status;
@@ -50,27 +44,14 @@ public class Adoption {
         this.endsAt = endsAt;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public Adopter getAdopter() { return adopter; }
+    public Animal getAnimal() { return animal; }
+    public AdoptionStatus getStatus() { return status; }
+    public LocalDateTime getStartedAt() { return startedAt; }
+    public LocalDateTime getEndsAt() { return endsAt; }
+    public LocalDate getLastEscalationOn() { return lastEscalationOn; }
 
-    public Adopter getAdopter() {
-        return adopter;
-    }
-
-    public Animal getAnimal() {
-        return animal;
-    }
-
-    public AdoptionStatus getStatus() {
-        return status;
-    }
-
-    public LocalDateTime getStartedAt() {
-        return startedAt;
-    }
-
-    public LocalDateTime getEndsAt() {
-        return endsAt;
-    }
+    /** Запоминает дату отправки уведомления волонтёру. */
+    public void markEscalated(LocalDate date) { lastEscalationOn = date; }
 }
