@@ -1,0 +1,35 @@
+
+### Получить всех животных
+GET http://localhost:8080/api/animals
+
+### Создать животное
+POST http://localhost:8080/api/animals
+Content-Type: application/json
+
+{
+  "name": "Луна",
+  "species": "CAT",
+  "available": true
+}
+
+### Получить животное по ID
+GET http://localhost:8080/api/animals/1
+
+### Отфильтровать кошек
+GET http://localhost:8080/api/animals?species=CAT
+
+### Обновить животное
+PUT http://localhost:8080/api/animals/1
+Content-Type: application/json
+
+{
+  "name": "Луна-М",
+  "species": "CAT",
+  "available": false
+}
+
+### Удалить животное
+DELETE http://localhost:8080/api/animals/1
+
+### Проверить удаление
+GET http://localhost:8080/api/animals/1
